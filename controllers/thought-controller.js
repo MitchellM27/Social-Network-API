@@ -60,6 +60,27 @@ const thoughtController = {
                 res.status(400).json(err);
             });
     },
+
+    //update thought by id
+    updateThought({params,body}, res) {
+        Thought.findOneAndUpdate({_id: params.thoughtId}, {
+                $set: body
+            }, {
+                runValidators: true,
+                new: true
+            })
+            .then(thoughtData => {
+                if (!thoughtData) {
+                    return res.status(404).json({
+                        message: 'No thought with this id!'
+                    });
+                }
+                return res.json({
+                    message: "Success"
+                });
+            })
+            .catch(err => res.json(err));
+    },
 }
 
 module.exports = thoughtController;
