@@ -2,21 +2,15 @@ const {User} = require('../models');
 
 const userController = {
     //creating a user
-    createUser({
-        body
-    }, res) {
+    createUser({body}, res) {
         User.create(body)
             .then(userData => res.json(userData))
             .catch(err => res.status(400).json(err));
     },
 
     //getting a user by their ID
-    getUserById({
-        params
-    }, res) {
-        User.findOne({
-                _id: params.id
-            })
+    getUserById({params }, res) {
+        User.findOne({_id: params.id})
             .populate({
                 path: 'thoughts',
                 select: '-__v'
@@ -52,13 +46,8 @@ const userController = {
     },
 
     //updating a user by their ID
-    updateUser({
-        params,
-        body
-    }, res) {
-        User.findOneAndUpdate({
-                _id: params.id
-            }, body, {
+    updateUser({params,body}, res) {
+        User.findOneAndUpdate({ _id: params.id}, body, {
                 new: true,
                 runValidators: true
             })
@@ -72,6 +61,53 @@ const userController = {
                 res.json(userData);
             })
             .catch(err => res.status(400).json(err));
+    },
+
+    //delete a user based on their ID
+    deleteUser({params}, res) {
+        User.findOneAndDelete({ _id: params.id})
+            .then(userData => {
+                if (!userData) {
+                    res.status(404).json({
+                        message: 'No user found with this id.'
+                    });
+                    return;
+                }
+                return userData;
+            })
+            .then(userData => {
+                User.updateMany({
+                        _id: {
+                            $in: userData.friends
+                        }
+                    }, {
+                        $pull: {
+                            friends: params.userId
+                        }
+                    })
+                    .then(() => {
+                        Thought.deleteMany({
+                                username: userData.username
+                            })
+                            .then(() => {
+                                res.json({
+                                    message: 'User deleted'
+                                });
+                            })
+                            .catch(err => {
+                                console.log(err);
+                                res.status(400).json(err);
+                            })
+                    })
+                    .catch(err => {
+                        console.log(err);
+                        res.status(400).json(err);
+                    })
+            })
+            .catch(err => {
+                console.log(err);
+                res.status(400).json(err);
+            })
     },
 
     
