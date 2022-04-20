@@ -1,8 +1,8 @@
 const {Thought,User} = require('../models');
 
 const thoughtController = {
-    //create thought
-    createThought(body, res) {
+    //create a thought
+    createThought({body}, res) {
         Thought.create(body)
             .then((thoughtData) => {
                 return User.findOneAndUpdate(
