@@ -130,6 +130,35 @@ const userController = {
             })
     },
 
+    //delete from friends list by ID
+    removefromFriends({params}, res) {
+        User.findOneAndDelete({ _id: params.friendId})
+            .then(deletedFriend => {
+                if (!deletedFriend) {
+                    return res.status(404).json({
+                        message: 'No friend found for this id.'
+                    })
+                }
+                return User.findOneAndUpdate({friends: params.friendId}, {
+                    $pull: {
+                        friends: params.friendId
+                    }
+                }, {
+                    new: true
+                });
+            })
+            .then(userData => {
+                if (!userData) {
+                    res.status(404).json({
+                        message: 'No friend found for this id.'
+                    })
+                    return;
+                }
+                res.json(userData);
+            })
+            .catch(err => res.json(err));
+    },
+
     
 };
 
