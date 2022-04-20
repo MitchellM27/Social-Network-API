@@ -31,6 +31,35 @@ const thoughtController = {
                 res.status(400).json(err);
             });
     },
+
+    //get thoughts
+    getAllThoughts(req, res) {
+        Thought.find({})
+            .then(thoughtData => res.json(thoughtData))
+            .catch(err => {
+                console.log(err);
+                res.status(500).json(err);
+            });
+    },
+
+    //getting a thought by ID
+    getThoughtById({params}, res) {
+        Thought.findOne({_id: params.thoughtId})
+            .select('-__v')
+            .then(thoughtData => {
+                if (!thoughtData) {
+                    res.status(404).json({
+                        message: 'No thought found at id.'
+                    });
+                    return;
+                }
+                res.json(thoughtData)
+            })
+            .catch(err => {
+                console.log(err);
+                res.status(400).json(err);
+            });
+    },
 }
 
 module.exports = thoughtController;
